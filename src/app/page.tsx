@@ -1,4 +1,10 @@
-import { EyeOff, Lock, Mail, Sparkle, UserRound } from "lucide-react";
+import {
+  IconEyeOff as EyeOff,
+  IconLock as Lock,
+  IconMail as Mail,
+  IconSparkle as Sparkle,
+  IconUserCircle as UserRound,
+} from "@tabler/icons-react";
 
 import { loginAction, registerAction } from "@/app/actions";
 import { ExpenseDashboard } from "@/components/expense-dashboard";
