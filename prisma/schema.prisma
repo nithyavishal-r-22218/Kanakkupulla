@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  role         String    @default("Finance Lead")
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  expenses     Expense[]
+  budgets      Budget[]
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  merchant      String
+  category      String
+  amount        Float
+  tax           Float    @default(0)
+  paymentMethod String
+  status        String   @default("Cleared")
+  note          String?
+  spentAt       DateTime
+  createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Budget {
+  id        String   @id @default(cuid())
+  category  String
+  limit     Float
+  period    String   @default("Monthly")
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
