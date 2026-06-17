@@ -111,6 +111,7 @@ type CalendarViewMode = "Month" | "Week" | "Day";
 type BookingManagementTab = "Overview" | "All bookings";
 
 type AllBookingRow = {
+  advancePaid?: string;
   amount: string;
   category: string;
   client: string;
@@ -130,6 +131,31 @@ type AllBookingRow = {
   startTime?: string;
   status: string;
   statusTone: string;
+};
+
+type DashboardInsightAction = "createBooking" | "exportSchedule" | "openBookings";
+
+type DashboardInsight = {
+  description: string;
+  eyebrow: string;
+  icon: TablerIcon;
+  id: string;
+  primaryAction: DashboardInsightAction;
+  primaryLabel: string;
+  secondaryAction: DashboardInsightAction;
+  secondaryLabel: string;
+  stats: { label: string; value: string }[];
+  title: string;
+  tone: string;
+};
+
+type DashboardAlert = {
+  detail: string;
+  icon: TablerIcon;
+  id: string;
+  insightId: string;
+  title: string;
+  tone: string;
 };
 
 const colors = {
@@ -259,41 +285,53 @@ const calendarEventSchedule: Partial<Record<number, { event: string; tone: strin
 
 const bookingDetails = [
   {
+    advancePaid: "₹35,000",
     category: "Wedding",
     client: "Sarah & Tom Johnson",
     id: "ABK-1092",
     initials: "ST",
     location: "Taj Connemara",
+    outstandingBalance: "₹33,000",
+    packagePrice: "₹68,000",
     status: "Confirmed",
     time: "Oct 03, 2025 - 10:00 AM",
     tone: "green",
   },
   {
+    advancePaid: "₹18,000",
     category: "Fashion",
     client: "Vogue FW Studio Shoot",
     id: "ABK-1095",
     initials: "VA",
     location: "Studio A",
+    outstandingBalance: "₹18,500",
+    packagePrice: "₹36,500",
     status: "In Progress",
     time: "Oct 05, 2025 - 09:00 AM",
     tone: "orange",
   },
   {
+    advancePaid: "₹0",
     category: "Kids",
     client: "Miller Family Session",
     id: "ABK-1098",
     initials: "MF",
     location: "Natural Light Room",
+    outstandingBalance: "₹18,000",
+    packagePrice: "₹18,000",
     status: "Pending",
     time: "Oct 07, 2025 - 03:30 PM",
     tone: "muted",
   },
   {
+    advancePaid: "₹92,000",
     category: "Wedding",
     client: "Chen Ceremony Gala",
     id: "ABK-1102",
     initials: "CG",
     location: "ITC Grand Chola",
+    outstandingBalance: "₹0",
+    packagePrice: "₹92,000",
     status: "Confirmed",
     time: "Oct 10, 2025 - 05:00 PM",
     tone: "green",
@@ -302,6 +340,7 @@ const bookingDetails = [
 
 const allBookingTableRows: AllBookingRow[] = [
   {
+    advancePaid: "₹45,000",
     amount: "₹45,000",
     category: "Wedding",
     client: "Amala Varghese",
@@ -310,12 +349,15 @@ const allBookingTableRows: AllBookingRow[] = [
     id: "ABK-1048",
     initials: "AV",
     location: "Marina Beach, CH",
+    outstandingBalance: "₹0",
+    packagePrice: "₹45,000",
     service: "Pre-wedding Outdoor",
     source: "sample",
     status: "Confirmed",
     statusTone: "green",
   },
   {
+    advancePaid: "₹35,000",
     amount: "₹82,000",
     category: "Fashion",
     client: "Karthik Raja",
@@ -324,12 +366,15 @@ const allBookingTableRows: AllBookingRow[] = [
     id: "ABK-1052",
     initials: "KR",
     location: "Studio B, Adyar",
+    outstandingBalance: "₹47,000",
+    packagePrice: "₹82,000",
     service: "Summer Collection '24",
     source: "sample",
     status: "Partial",
     statusTone: "orange",
   },
   {
+    advancePaid: "₹0",
     amount: "₹28,500",
     category: "Baby & Kids",
     client: "Priya Sharma",
@@ -338,12 +383,15 @@ const allBookingTableRows: AllBookingRow[] = [
     id: "ABK-1058",
     initials: "PS",
     location: "The Grand Hyatt, T-Nagar",
+    outstandingBalance: "₹28,500",
+    packagePrice: "₹28,500",
     service: "1st Birthday Party",
     source: "sample",
     status: "Pending",
     statusTone: "red",
   },
   {
+    advancePaid: "₹25,000",
     amount: "₹55,000",
     category: "Corporate",
     client: "Rahul Mehta",
@@ -352,6 +400,8 @@ const allBookingTableRows: AllBookingRow[] = [
     id: "ABK-1061",
     initials: "RM",
     location: "DLF Cybercity, Porur",
+    outstandingBalance: "₹30,000",
+    packagePrice: "₹55,000",
     service: "Corporate Headshots",
     source: "sample",
     status: "In Progress",
@@ -587,6 +637,7 @@ function formatTableDateTime(date: string, time: string) {
 
 function getAllBookingRows(registeredBookings: RegisteredBooking[]): AllBookingRow[] {
   const registeredRows = registeredBookings.map((booking) => ({
+    advancePaid: booking.advancePaid,
     amount: booking.packagePrice ?? "₹0.00",
     category: booking.category === "Kids" ? "Baby & Kids" : booking.category,
     client: booking.client,
@@ -609,7 +660,8 @@ function getAllBookingRows(registeredBookings: RegisteredBooking[]): AllBookingR
   }));
 
   const detailRows = bookingDetails.map((booking, index) => ({
-    amount: ["₹68,000", "₹36,500", "₹18,000", "₹92,000"][index] ?? "₹24,000",
+    advancePaid: booking.advancePaid,
+    amount: booking.packagePrice ?? ["₹68,000", "₹36,500", "₹18,000", "₹92,000"][index] ?? "₹24,000",
     category: booking.category === "Kids" ? "Baby & Kids" : booking.category,
     client: booking.client,
     date: ["2025-10-03", "2025-10-05", "2025-10-07", "2025-10-10"][index] ?? "2025-10-12",
@@ -617,6 +669,8 @@ function getAllBookingRows(registeredBookings: RegisteredBooking[]): AllBookingR
     id: booking.id,
     initials: booking.initials,
     location: booking.location,
+    outstandingBalance: booking.outstandingBalance,
+    packagePrice: booking.packagePrice,
     service: `${booking.category} Session`,
     source: "sample" as const,
     status: booking.status,
@@ -729,6 +783,12 @@ function getTableCategoryStyle(category: string) {
   return { backgroundColor: "#eef1f5", borderColor: "#dde2ea", color: colors.muted };
 }
 
+function getDashboardInsightId(kind: string, label: string) {
+  const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  return `${kind}-${slug}`;
+}
+
 export function ExpenseDashboard({
   budgets,
   expenses,
@@ -741,9 +801,11 @@ export function ExpenseDashboard({
   user: User;
 }) {
   const [activeView, setActiveView] = useState<NavLabel>("Dashboard");
+  const [activeDashboardInsightId, setActiveDashboardInsightId] = useState("metric-bookings");
   const [bookingForm, setBookingForm] = useState<BookingFormState>(() => getEmptyBookingForm());
   const [bookingSearchQuery, setBookingSearchQuery] = useState("");
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [isNotificationTrayOpen, setIsNotificationTrayOpen] = useState(false);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [registeredBookings, setRegisteredBookings] = useState<RegisteredBooking[]>([]);
   const dataSignature = `${budgets.length}-${expenses.length}-${teammateCount}-${user.id}`;
@@ -757,10 +819,10 @@ export function ExpenseDashboard({
   const role = "STUDIO OWNER";
   const monthlyRevenue = "₹12.4L";
   const metrics = [
-    { icon: BookOpen, label: "Total Bookings", tag: "+12%", value: String(bookingCount) },
-    { icon: DollarSign, label: "Monthly Revenue", tag: "Monthly", value: monthlyRevenue },
-    { icon: Package, label: "Gallery Deliveries", tag: "Priority", value: `${galleryCount} Due` },
-    { icon: Gift, label: "Gift Shop Orders", tag: "Active", value: String(orderCount) },
+    { icon: BookOpen, id: "metric-bookings", label: "Total Bookings", tag: "+12%", value: String(bookingCount) },
+    { icon: DollarSign, id: "metric-revenue", label: "Monthly Revenue", tag: "Monthly", value: monthlyRevenue },
+    { icon: Package, id: "metric-gallery", label: "Gallery Deliveries", tag: "Priority", value: `${galleryCount} Due` },
+    { icon: Gift, id: "metric-orders", label: "Gift Shop Orders", tag: "Active", value: String(orderCount) },
   ];
   const openBookingForm = (date = formatDateInputValue(new Date())) => {
     setActiveView("Bookings");
@@ -800,6 +862,162 @@ export function ExpenseDashboard({
     });
     closeBookingForm();
   };
+  const dashboardInsights: DashboardInsight[] = [
+    {
+      description: "Calendar volume is healthy, but the next useful move is keeping new inquiries close to available dates.",
+      eyebrow: "Booking Momentum",
+      icon: BookOpen,
+      id: "metric-bookings",
+      primaryAction: "openBookings",
+      primaryLabel: "Open calendar",
+      secondaryAction: "createBooking",
+      secondaryLabel: "New booking",
+      stats: [
+        { label: "Total", value: String(bookingCount) },
+        { label: "Upcoming", value: String(shotCount) },
+        { label: "Drafts", value: String(retouchCount) },
+      ],
+      title: "156 bookings need a live operating view",
+      tone: "navy",
+    },
+    {
+      description: "Revenue is tracking upward. Export the schedule before the next finance review or add a new paid booking.",
+      eyebrow: "Revenue Pulse",
+      icon: DollarSign,
+      id: "metric-revenue",
+      primaryAction: "exportSchedule",
+      primaryLabel: "Export schedule",
+      secondaryAction: "createBooking",
+      secondaryLabel: "Add revenue",
+      stats: [
+        { label: "Month", value: monthlyRevenue },
+        { label: "Growth", value: "62%" },
+        { label: "Pipeline", value: formatCurrency(total) },
+      ],
+      title: "Monthly revenue is ready for review",
+      tone: "green",
+    },
+    {
+      description: "Gallery deliveries should move before new print work stacks up. Use this as a priority queue during studio standup.",
+      eyebrow: "Delivery Queue",
+      icon: Package,
+      id: "metric-gallery",
+      primaryAction: "openBookings",
+      primaryLabel: "Review shoots",
+      secondaryAction: "createBooking",
+      secondaryLabel: "Schedule slot",
+      stats: [
+        { label: "Due", value: String(galleryCount) },
+        { label: "Retouch", value: String(retouchCount) },
+        { label: "Next", value: "Tomorrow" },
+      ],
+      title: "Gallery delivery queue has priority work",
+      tone: "orange",
+    },
+    {
+      description: "Gift shop orders can be managed from the tracking list. Select an order next to make its progress the dashboard focus.",
+      eyebrow: "Order Flow",
+      icon: Gift,
+      id: "metric-orders",
+      primaryAction: "openBookings",
+      primaryLabel: "Review calendar",
+      secondaryAction: "exportSchedule",
+      secondaryLabel: "Export schedule",
+      stats: [
+        { label: "Orders", value: String(orderCount) },
+        { label: "Complete", value: "4" },
+        { label: "At risk", value: "2" },
+      ],
+      title: "Gift shop has active fulfillment work",
+      tone: "orange",
+    },
+    ...shoots.map((shoot, index) => ({
+      description: `${shoot.detail}. Keep this selected while coordinating calls, contracts, and retouch handoff.`,
+      eyebrow: "Upcoming Shoot",
+      icon: shoot.icon,
+      id: getDashboardInsightId("shoot", shoot.title),
+      primaryAction: "openBookings",
+      primaryLabel: "View schedule",
+      secondaryAction: "createBooking",
+      secondaryLabel: "Add follow-up",
+      stats: [
+        { label: "Amount", value: shoot.amount },
+        { label: "Status", value: shoot.status },
+        { label: "Queue", value: `#${index + 1}` },
+      ],
+      title: shoot.title,
+      tone: shoot.tone,
+    } satisfies DashboardInsight)),
+    ...orders.map((order) => ({
+      description: order.detail,
+      eyebrow: "Gift Shop Order",
+      icon: ShoppingCart,
+      id: getDashboardInsightId("order", order.name),
+      primaryAction: "createBooking",
+      primaryLabel: "Create related booking",
+      secondaryAction: "exportSchedule",
+      secondaryLabel: "Export schedule",
+      stats: [
+        { label: "Progress", value: `${order.progress}%` },
+        { label: "Units", value: order.count },
+        { label: "Stage", value: order.progress === 100 ? "Ready" : "Active" },
+      ],
+      title: order.name,
+      tone: order.progress === 100 ? "green" : "orange",
+    } satisfies DashboardInsight)),
+  ];
+  const activeDashboardInsight = dashboardInsights.find((insight) => insight.id === activeDashboardInsightId) ?? dashboardInsights[0];
+  const dashboardAlerts: DashboardAlert[] = [
+    {
+      detail: "Pending confirmations should be handled before tomorrow's production block.",
+      icon: ClipboardList,
+      id: "pending-confirmations",
+      insightId: "metric-bookings",
+      title: "7 confirmations need attention",
+      tone: "red",
+    },
+    {
+      detail: "Printing is close to delivery. Keep the gift queue visible during handoff.",
+      icon: ShoppingCart,
+      id: "gift-shop-queue",
+      insightId: getDashboardInsightId("order", orders[0].name),
+      title: "Gift shop queue updated",
+      tone: "orange",
+    },
+    {
+      detail: "Revenue is trending up and ready for a clean CSV handoff.",
+      icon: TrendingUp,
+      id: "revenue-review",
+      insightId: "metric-revenue",
+      title: "Monthly revenue review ready",
+      tone: "green",
+    },
+  ];
+  const dashboardSearchValue = bookingSearchQuery.trim().toLowerCase();
+  const dashboardSearchResults = dashboardSearchValue && activeView === "Dashboard"
+    ? dashboardInsights
+        .filter((insight) => [insight.title, insight.eyebrow, insight.description].some((value) => value.toLowerCase().includes(dashboardSearchValue)))
+        .slice(0, 5)
+    : [];
+  const selectDashboardInsight = (insightId: string) => {
+    setActiveView("Dashboard");
+    setActiveDashboardInsightId(insightId);
+    setBookingSearchQuery("");
+    setIsNotificationTrayOpen(false);
+  };
+  const triggerDashboardAction = (action: DashboardInsightAction) => {
+    if (action === "createBooking") {
+      openBookingForm();
+      return;
+    }
+
+    if (action === "exportSchedule") {
+      exportBookingRows(getAllBookingRows(registeredBookings));
+      return;
+    }
+
+    setActiveView("Bookings");
+  };
 
   return (
     <div className="studio-dashboard min-h-screen bg-[var(--studio-page)] text-[var(--studio-ink)] md:flex" data-source={dataSignature}>
@@ -837,32 +1055,91 @@ export function ExpenseDashboard({
       </aside>
 
       <main className="min-w-0 flex-1 bg-[var(--studio-page)]">
-        <header className="flex h-16 items-center justify-between border-b border-[var(--studio-line)] bg-white/85 px-8 backdrop-blur">
+        <header className="relative z-40 flex h-16 items-center justify-between border-b border-[var(--studio-line)] bg-white/85 px-8 backdrop-blur">
           <h1 className="text-[20px] font-extrabold tracking-[-0.01em] text-[var(--studio-ink)]">
             {activeView === "Bookings" ? "Booking Management" : "Studio Management"}
           </h1>
 
           <div className="flex items-center gap-6">
-            <label className="search-pill hidden h-9 items-center gap-2.5 rounded-full border border-[var(--studio-line)] bg-[#f7f8fa] px-4 md:flex">
-              <span className="sr-only">Search bookings and clients</span>
-              <input
-                className="w-[190px] bg-transparent text-[12px] font-medium text-[var(--studio-ink)] outline-none placeholder:text-[#a3aab6]"
-                onChange={(event) => setBookingSearchQuery(event.target.value)}
-                placeholder={activeView === "Bookings" ? "Search bookings, clients, or dates..." : "Search bookings, clients..."}
-                type="search"
-                value={bookingSearchQuery}
-              />
-              <Search className="text-[#646c7a]" size={17} strokeWidth={2.5} />
-            </label>
+            <div className="search-shell hidden md:block">
+              <label className="search-pill flex h-9 items-center gap-2.5 rounded-full border border-[var(--studio-line)] bg-[#f7f8fa] px-4">
+                <span className="sr-only">Search bookings and clients</span>
+                <input
+                  className="w-[190px] bg-transparent text-[12px] font-medium text-[var(--studio-ink)] outline-none placeholder:text-[#a3aab6]"
+                  onChange={(event) => setBookingSearchQuery(event.target.value)}
+                  placeholder={activeView === "Bookings" ? "Search bookings, clients, or dates..." : "Search dashboard insights..."}
+                  type="search"
+                  value={bookingSearchQuery}
+                />
+                <Search className="text-[#646c7a]" size={17} strokeWidth={2.5} />
+              </label>
 
-            <button
-              aria-label="Notifications"
-              className="relative grid h-9 w-9 place-items-center rounded-full text-[var(--studio-ink)] transition hover:bg-[#f0f2f6]"
-              type="button"
-            >
-              <Bell size={17} strokeWidth={2.3} />
-              <span className="notification-dot" />
-            </button>
+              {dashboardSearchResults.length > 0 ? (
+                <div aria-label="Dashboard search results" className="dashboard-search-results">
+                  {dashboardSearchResults.map((insight) => {
+                    const styles = getBookingTone(insight.tone);
+                    const ResultIcon = insight.icon;
+
+                    return (
+                      <button
+                        className="dashboard-search-result"
+                        key={insight.id}
+                        onClick={() => selectDashboardInsight(insight.id)}
+                        type="button"
+                      >
+                        <span className="dashboard-search-icon" style={{ backgroundColor: styles.bg, color: styles.fg }}>
+                          <ResultIcon size={15} strokeWidth={2.45} />
+                        </span>
+                        <span>
+                          <strong>{insight.title}</strong>
+                          <small>{insight.eyebrow}</small>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="notification-shell">
+              <button
+                aria-expanded={isNotificationTrayOpen}
+                aria-label="Notifications"
+                className="relative grid h-9 w-9 place-items-center rounded-full text-[var(--studio-ink)] transition hover:bg-[#f0f2f6]"
+                onClick={() => setIsNotificationTrayOpen((isOpen) => !isOpen)}
+                type="button"
+              >
+                <Bell size={17} strokeWidth={2.3} />
+                <span className="notification-dot" />
+              </button>
+
+              {isNotificationTrayOpen ? (
+                <div aria-label="Dashboard notifications" className="notification-tray" role="dialog">
+                  <div className="notification-tray-head">
+                    <strong>Studio alerts</strong>
+                    <span>{dashboardAlerts.length} active</span>
+                  </div>
+                  <div className="grid gap-2">
+                    {dashboardAlerts.map((alert) => {
+                      const styles = getBookingTone(alert.tone);
+                      const AlertIcon = alert.icon;
+
+                      return (
+                        <button className="notification-item" key={alert.id} onClick={() => selectDashboardInsight(alert.insightId)} type="button">
+                          <span className="notification-item-icon" style={{ backgroundColor: styles.bg, color: styles.fg }}>
+                            <AlertIcon size={16} strokeWidth={2.45} />
+                          </span>
+                          <span className="min-w-0">
+                            <strong>{alert.title}</strong>
+                            <span>{alert.detail}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
 
             <div className="hidden h-9 items-center gap-3.5 border-l border-[var(--studio-line)] pl-5 md:flex">
               <div className="text-right leading-tight">
@@ -919,9 +1196,21 @@ export function ExpenseDashboard({
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             {metrics.map((card, index) => (
-              <MetricCard key={card.label} {...card} delay={0.12 + index * 0.07} />
+              <MetricCard
+                key={card.label}
+                {...card}
+                active={activeDashboardInsightId === card.id}
+                delay={0.12 + index * 0.07}
+                onSelect={() => setActiveDashboardInsightId(card.id)}
+              />
             ))}
           </div>
+
+          <DashboardInsightPanel
+            insight={activeDashboardInsight}
+            onPrimaryAction={() => triggerDashboardAction(activeDashboardInsight.primaryAction)}
+            onSecondaryAction={() => triggerDashboardAction(activeDashboardInsight.secondaryAction)}
+          />
 
           <div className="mt-6 grid gap-5 md:grid-cols-[2.07fr_1fr]">
             <section className="dashboard-rise" style={{ animationDelay: "0.34s" }}>
@@ -931,6 +1220,7 @@ export function ExpenseDashboard({
                 </h2>
                 <button
                   className="inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[var(--studio-ink)] transition hover:text-[var(--studio-orange)]"
+                  onClick={() => setActiveView("Bookings")}
                   type="button"
                 >
                   <span>View Calendar</span>
@@ -939,9 +1229,19 @@ export function ExpenseDashboard({
               </div>
 
               <div className="space-y-3">
-                {shoots.map((shoot, index) => (
-                  <ShootRow key={shoot.title} {...shoot} delay={0.42 + index * 0.06} />
-                ))}
+                {shoots.map((shoot, index) => {
+                  const insightId = getDashboardInsightId("shoot", shoot.title);
+
+                  return (
+                    <ShootRow
+                      key={shoot.title}
+                      {...shoot}
+                      active={activeDashboardInsightId === insightId}
+                      delay={0.42 + index * 0.06}
+                      onSelect={() => setActiveDashboardInsightId(insightId)}
+                    />
+                  );
+                })}
               </div>
             </section>
 
@@ -954,11 +1254,21 @@ export function ExpenseDashboard({
               </div>
 
               <div className="space-y-5 rounded-[2px] bg-transparent">
-                {orders.map((order, index) => (
-                  <TrackingRow key={order.name} {...order} delay={0.5 + index * 0.08} />
-                ))}
+                {orders.map((order, index) => {
+                  const insightId = getDashboardInsightId("order", order.name);
 
-                <button className="manage-button w-full" type="button">
+                  return (
+                    <TrackingRow
+                      key={order.name}
+                      {...order}
+                      active={activeDashboardInsightId === insightId}
+                      delay={0.5 + index * 0.08}
+                      onSelect={() => setActiveDashboardInsightId(insightId)}
+                    />
+                  );
+                })}
+
+                <button className="manage-button w-full" onClick={() => setActiveDashboardInsightId(getDashboardInsightId("order", orders[0].name))} type="button">
                   Manage All Orders
                 </button>
 
@@ -1027,6 +1337,107 @@ export function ExpenseDashboard({
         .search-pill:focus-within {
           border-color: rgba(255, 152, 0, 0.58);
           box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.09);
+        }
+
+        .search-shell,
+        .notification-shell {
+          position: relative;
+        }
+
+        .dashboard-search-results,
+        .notification-tray {
+          animation: studioRise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+          background: #ffffff;
+          border: 1px solid rgba(221, 226, 234, 0.88);
+          border-radius: 16px;
+          box-shadow: 0 24px 58px rgba(15, 35, 66, 0.18);
+          padding: 12px;
+          position: absolute;
+          right: 0;
+          top: calc(100% + 12px);
+          width: min(340px, calc(100vw - 32px));
+          z-index: 40;
+        }
+
+        .dashboard-search-results {
+          display: grid;
+          gap: 7px;
+          left: 0;
+          right: auto;
+        }
+
+        .dashboard-search-result,
+        .notification-item {
+          align-items: flex-start;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          display: grid;
+          gap: 10px;
+          grid-template-columns: auto minmax(0, 1fr);
+          padding: 10px;
+          text-align: left;
+          width: 100%;
+        }
+
+        .dashboard-search-result:hover,
+        .notification-item:hover {
+          background: #f7f8fa;
+          border-color: rgba(255, 152, 0, 0.25);
+          transform: translateY(-2px);
+        }
+
+        .dashboard-search-icon,
+        .notification-item-icon {
+          border-radius: 10px;
+          display: grid;
+          height: 34px;
+          place-items: center;
+          width: 34px;
+        }
+
+        .dashboard-search-result strong,
+        .dashboard-search-result small,
+        .notification-item strong,
+        .notification-item span span {
+          display: block;
+        }
+
+        .dashboard-search-result strong,
+        .notification-item strong {
+          color: var(--studio-ink);
+          font-size: 12px;
+          font-weight: 950;
+          line-height: 1.25;
+        }
+
+        .dashboard-search-result small,
+        .notification-item span span {
+          color: var(--studio-muted);
+          font-size: 10px;
+          font-weight: 650;
+          line-height: 1.4;
+          margin-top: 4px;
+        }
+
+        .notification-tray-head {
+          align-items: center;
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+
+        .notification-tray-head strong {
+          color: var(--studio-ink);
+          font-size: 13px;
+          font-weight: 950;
+        }
+
+        .notification-tray-head span {
+          color: var(--studio-orange);
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
 
         .dashboard-canvas {
@@ -1150,6 +1561,8 @@ export function ExpenseDashboard({
           box-shadow: 0 10px 24px rgba(24, 32, 51, 0.035);
           min-height: 124px;
           padding: 16px 20px;
+          text-align: left;
+          width: 100%;
         }
 
         .metric-card:hover,
@@ -1157,6 +1570,17 @@ export function ExpenseDashboard({
           border-color: rgba(255, 152, 0, 0.35);
           box-shadow: 0 22px 44px rgba(24, 32, 51, 0.09);
           transform: translateY(-4px);
+        }
+
+        .metric-card-active {
+          background: linear-gradient(180deg, #ffffff 0%, #fff8ee 100%);
+          border-color: rgba(255, 152, 0, 0.52);
+          box-shadow: 0 22px 46px rgba(255, 152, 0, 0.13);
+        }
+
+        .metric-card-active .metric-icon {
+          background: #fff0d7;
+          color: var(--studio-orange);
         }
 
         .metric-icon {
@@ -1195,6 +1619,14 @@ export function ExpenseDashboard({
           border-radius: 8px;
           box-shadow: 0 8px 18px rgba(24, 32, 51, 0.025);
           min-height: 68px;
+          text-align: left;
+          width: 100%;
+        }
+
+        .shoot-card-active {
+          background: #fff8ee;
+          border-color: rgba(255, 152, 0, 0.46);
+          box-shadow: 0 18px 40px rgba(255, 152, 0, 0.11);
         }
 
         .shoot-card:hover .shoot-icon {
@@ -1213,6 +1645,24 @@ export function ExpenseDashboard({
 
         .tracking-row {
           animation: studioRise 0.62s cubic-bezier(0.16, 1, 0.3, 1) both;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          display: block;
+          padding: 8px;
+          text-align: left;
+          width: 100%;
+        }
+
+        .tracking-row:hover,
+        .tracking-row-active {
+          background: #fff8ee;
+          border-color: rgba(255, 152, 0, 0.34);
+          box-shadow: 0 14px 30px rgba(24, 32, 51, 0.06);
+          transform: translateY(-2px);
+        }
+
+        .tracking-row-active .tracking-fill {
+          filter: saturate(1.18);
         }
 
         .tracking-bar {
@@ -1263,6 +1713,120 @@ export function ExpenseDashboard({
         .assistant-note p::before,
         .assistant-note p::after {
           content: '"';
+        }
+
+        .dashboard-insight-panel {
+          align-items: center;
+          animation-delay: 0.26s;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(221, 226, 234, 0.78);
+          border-radius: 14px;
+          box-shadow: 0 18px 46px rgba(24, 32, 51, 0.055);
+          display: grid;
+          gap: 16px;
+          grid-template-columns: auto minmax(0, 1fr) auto auto;
+          margin-top: 18px;
+          padding: 17px;
+        }
+
+        .dashboard-insight-icon {
+          border-radius: 13px;
+          display: grid;
+          height: 46px;
+          place-items: center;
+          width: 46px;
+        }
+
+        .dashboard-insight-copy p:first-child {
+          color: var(--studio-orange);
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+
+        .dashboard-insight-copy h2 {
+          color: var(--studio-ink);
+          font-size: 18px;
+          font-weight: 950;
+          letter-spacing: -0.025em;
+          line-height: 1.15;
+          margin-top: 4px;
+        }
+
+        .dashboard-insight-copy p:last-child {
+          color: var(--studio-muted);
+          font-size: 11px;
+          font-weight: 650;
+          line-height: 1.5;
+          margin-top: 5px;
+          max-width: 430px;
+        }
+
+        .dashboard-insight-stats {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          justify-content: flex-end;
+        }
+
+        .dashboard-insight-stat {
+          background: #f7f8fa;
+          border: 1px solid rgba(221, 226, 234, 0.76);
+          border-radius: 10px;
+          min-width: 86px;
+          padding: 9px 10px;
+        }
+
+        .dashboard-insight-stat span {
+          color: var(--studio-muted);
+          display: block;
+          font-size: 9px;
+          font-weight: 950;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .dashboard-insight-stat strong {
+          color: var(--studio-ink);
+          display: block;
+          font-size: 12px;
+          font-weight: 950;
+          line-height: 1.2;
+          margin-top: 3px;
+        }
+
+        .dashboard-insight-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .dashboard-insight-button {
+          align-items: center;
+          border-radius: 999px;
+          display: inline-flex;
+          font-size: 11px;
+          font-weight: 950;
+          height: 34px;
+          justify-content: center;
+          padding: 0 14px;
+          white-space: nowrap;
+        }
+
+        .dashboard-insight-button-primary {
+          background: var(--studio-navy);
+          color: #ffffff;
+        }
+
+        .dashboard-insight-button-secondary {
+          background: #f1f3f7;
+          color: var(--studio-ink);
+        }
+
+        .dashboard-insight-button:hover {
+          box-shadow: 0 12px 24px rgba(24, 32, 51, 0.1);
+          transform: translateY(-2px);
         }
 
         .booking-page {
@@ -2153,6 +2717,21 @@ export function ExpenseDashboard({
         }
 
         @media (max-width: 1023px) {
+          .dashboard-insight-panel {
+            grid-template-columns: auto minmax(0, 1fr);
+          }
+
+          .dashboard-insight-stats,
+          .dashboard-insight-actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+          }
+
+          .dashboard-insight-actions {
+            flex-direction: row;
+            flex-wrap: wrap;
+          }
+
           .floating-camera {
             bottom: 24px;
             height: 66px;
@@ -2853,6 +3432,7 @@ function BookingRowDetailModal({
     { icon: Calendar, label: "Schedule", value: row.dateTime.replace("\n", " - ") },
     { icon: MapPin, label: "Location", value: row.location },
     { icon: CircleDollarSign, label: "Package", value: row.packagePrice ?? row.amount },
+    { icon: CircleDollarSign, label: "Advance", value: row.advancePaid ?? "Not recorded" },
     { icon: CircleDollarSign, label: "Outstanding", value: row.outstandingBalance ?? "Not recorded" },
     { icon: Phone, label: "Phone", value: row.phone ?? "Not recorded" },
     { icon: Mail, label: "Email", value: row.email ?? "Not recorded" },
@@ -3032,19 +3612,19 @@ function BookingDetailCard({
         </div>
       ) : null}
 
-      {packagePrice || outstandingBalance ? (
+      {packagePrice || advancePaid || outstandingBalance ? (
         <div className="mt-3 grid grid-cols-3 gap-2 rounded-[10px] bg-[#f6f7fa] p-2">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.08em] text-[var(--studio-muted)]">Package</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{packagePrice}</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{packagePrice ?? "Not recorded"}</p>
           </div>
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.08em] text-[var(--studio-muted)]">Advance</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{advancePaid}</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{advancePaid ?? "Not recorded"}</p>
           </div>
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.08em] text-[var(--studio-muted)]">Due</p>
-            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{outstandingBalance}</p>
+            <p className="mt-1 text-[10px] font-black text-[var(--studio-ink)]">{outstandingBalance ?? "Not recorded"}</p>
           </div>
         </div>
       ) : null}
@@ -3103,6 +3683,48 @@ function NavButton({
   );
 }
 
+function DashboardInsightPanel({
+  insight,
+  onPrimaryAction,
+  onSecondaryAction,
+}: {
+  insight: DashboardInsight;
+  onPrimaryAction: () => void;
+  onSecondaryAction: () => void;
+}) {
+  const styles = getBookingTone(insight.tone);
+  const Icon = insight.icon;
+
+  return (
+    <section className="dashboard-insight-panel dashboard-rise" aria-live="polite">
+      <span className="dashboard-insight-icon" style={{ backgroundColor: styles.bg, color: styles.fg }}>
+        <Icon size={21} strokeWidth={2.45} />
+      </span>
+      <div className="dashboard-insight-copy min-w-0">
+        <p>{insight.eyebrow}</p>
+        <h2>{insight.title}</h2>
+        <p>{insight.description}</p>
+      </div>
+      <div className="dashboard-insight-stats">
+        {insight.stats.map((stat) => (
+          <div className="dashboard-insight-stat" key={stat.label}>
+            <span>{stat.label}</span>
+            <strong>{stat.value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="dashboard-insight-actions">
+        <button className="dashboard-insight-button dashboard-insight-button-primary" onClick={onPrimaryAction} type="button">
+          {insight.primaryLabel}
+        </button>
+        <button className="dashboard-insight-button dashboard-insight-button-secondary" onClick={onSecondaryAction} type="button">
+          {insight.secondaryLabel}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function HeroPill({ label, value }: { label: string; value: string }) {
   return (
     <div className="hero-pill">
@@ -3113,22 +3735,26 @@ function HeroPill({ label, value }: { label: string; value: string }) {
 }
 
 function MetricCard({
+  active,
   delay,
   icon: Icon,
   label,
+  onSelect,
   tag,
   value,
 }: {
+  active: boolean;
   delay: number;
   icon: TablerIcon;
   label: string;
+  onSelect: () => void;
   tag: string;
   value: string;
 }) {
   const tagClass = tag === "+12%" ? "metric-tag-positive" : tag === "Priority" ? "metric-tag-alert" : "";
 
   return (
-    <article className="metric-card" style={{ animationDelay: `${delay}s` }}>
+    <button aria-pressed={active} className={`metric-card ${active ? "metric-card-active" : ""}`} onClick={onSelect} style={{ animationDelay: `${delay}s` }} type="button">
       <div className="flex items-start justify-between">
         <span className="metric-icon">
           <Icon size={18} strokeWidth={2.35} />
@@ -3141,23 +3767,27 @@ function MetricCard({
       <p className="mt-2 text-[22px] font-black leading-none tracking-[-0.02em] text-[var(--studio-ink)]">
         {value}
       </p>
-    </article>
+    </button>
   );
 }
 
 function ShootRow({
+  active,
   amount,
   delay,
   detail,
   icon: Icon,
+  onSelect,
   status,
   title,
   tone,
 }: {
+  active: boolean;
   amount: string;
   delay: number;
   detail: string;
   icon: TablerIcon;
+  onSelect: () => void;
   status: string;
   title: string;
   tone: string;
@@ -3165,7 +3795,7 @@ function ShootRow({
   const style = toneStyles[tone];
 
   return (
-    <article className="shoot-card flex items-center justify-between gap-4 px-4 py-3.5" style={{ animationDelay: `${delay}s` }}>
+    <button aria-pressed={active} className={`shoot-card flex items-center justify-between gap-4 px-4 py-3.5 ${active ? "shoot-card-active" : ""}`} onClick={onSelect} style={{ animationDelay: `${delay}s` }} type="button">
       <div className="flex min-w-0 items-center gap-4">
         <span className="shoot-icon" style={{ backgroundColor: style.bg, color: style.icon }}>
           <Icon size={18} strokeWidth={2.3} />
@@ -3186,27 +3816,31 @@ function ShootRow({
           {status}
         </p>
       </div>
-    </article>
+    </button>
   );
 }
 
 function TrackingRow({
+  active,
   color,
   count,
   delay,
   detail,
   name,
+  onSelect,
   progress,
 }: {
+  active: boolean;
   color: string;
   count: string;
   delay: number;
   detail: string;
   name: string;
+  onSelect: () => void;
   progress: number;
 }) {
   return (
-    <div className="tracking-row" style={{ animationDelay: `${delay}s` }}>
+    <button aria-pressed={active} className={`tracking-row ${active ? "tracking-row-active" : ""}`} onClick={onSelect} style={{ animationDelay: `${delay}s` }} type="button">
       <div className="mb-1.5 flex items-center justify-between gap-3">
         <p className="text-[11px] font-extrabold leading-tight text-[var(--studio-ink)]">{name}</p>
         <p className="shrink-0 text-[10px] font-black text-[var(--studio-ink)]">{count}</p>
@@ -3220,7 +3854,7 @@ function TrackingRow({
       >
         {detail}
       </p>
-    </div>
+    </button>
   );
 }
 
